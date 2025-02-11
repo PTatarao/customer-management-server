@@ -1,4 +1,5 @@
 using Customer.Repository;
+using CustomerManagement.Application.Service;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -8,6 +9,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.configureservice(builder.Configuration);
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IUserService, UserService>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",

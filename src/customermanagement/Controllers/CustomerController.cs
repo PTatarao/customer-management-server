@@ -1,3 +1,6 @@
+using System.Net;
+using CustomerManagement.Application.Service;
+using CustomerManagement.Contracts.Contracts;
 using CustomerManagement.Repository.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,50 +12,36 @@ namespace customermanagement
     public class CustomerController : ControllerBase
     {
         private readonly ILogger<CustomerController> _logger;
+        private readonly ICustomerService _customerService;
 
-        private ModelContext _modelContext;
-        public CustomerController(ILogger<CustomerController> logger, ModelContext modelContext)
+        public CustomerController(ILogger<CustomerController> logger, ICustomerService customerService)
         {
             _logger = logger;
-            _modelContext = modelContext;
+            _customerService = customerService;
         }
 
         [HttpGet(Name = "GetCustomers")]
-        public IEnumerable<CustomerDetails> Get()
+        public async Task<ActionResult> Get()
         {
-            var customers = _modelContext.Customers.ToList();
-            return customers.Select(c => new CustomerDetails
-            {
-                dob = c.DateOfBirth,
-                id = c.CustomerNumber,
-                CustomerName = c.CustomerName,
-                Gender = c.Gender,
-
-            }).ToArray();
+            var customers = await _customerService.GetCustomers();
+            return Ok(customers);
 
         }
 
         [HttpPost(Name = "CreateCustomer")]
         public async Task<IActionResult> Create([FromBody] CustomerDetails customerDetails)
         {
-            var newCustomer = new CustomerManagement.Repository.Models.Customer
-            {
-                DateOfBirth = customerDetails?.dob,
-                CustomerName = customerDetails?.CustomerName,
-                Gender = customerDetails?.Gender,
-
-            };
-            _modelContext.Customers.Add(newCustomer);
             try
             {
-                await _modelContext.SaveChangesAsync();
+               await _customerService.CreateCustomers(customerDetails);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error whil creating customer");
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error whil creating customer");
             }
 
-            return CreatedAtAction(nameof(Get), new { id = newCustomer.CustomerNumber }, newCustomer);
+            return Ok();
         }
 
 
@@ -63,42 +52,35 @@ namespace customermanagement
             {
                 return BadRequest("Customer ID mismatch");
             }
-
-            var existingCustomer = await _modelContext.Customers.FindAsync(id);
-            if (existingCustomer == null)
-            {
-                return NotFound("Customer not found");
-            }
-
-            existingCustomer.CustomerName = customerDetails.CustomerName;
-            existingCustomer.Gender = customerDetails.Gender;
-            existingCustomer.DateOfBirth = customerDetails.dob;
-
             try
             {
-                await _modelContext.SaveChangesAsync();
+                await _customerService.UpdateCustomers(customerDetails);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error updating product");
+                _logger.LogError(ex, "Error while updating customer");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error while updating customer");
             }
-
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCustomer(int id)
         {
-            var customer = await _modelContext.Customers.FindAsync(id);
-            if (customer == null)
+            if (id==0)
             {
-                return NotFound("customer not found");
+                return BadRequest("Customer ID should be greater than 0");
             }
-
-            _modelContext.Customers.Remove(customer);
-            await _modelContext.SaveChangesAsync();
-
-            return NoContent();
+            try
+            {
+                await _customerService.DeleteCustomers(id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while deleting customer");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error while deleting customer");
+            }
+            return Ok();
         }
     }
 }

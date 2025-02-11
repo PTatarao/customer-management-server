@@ -10,7 +10,8 @@ namespace Customer.Repository
         public static IServiceCollection configureservice(this IServiceCollection service, IConfiguration Configuration)
         {
             //access the appsetting json file in your WebApplication File
-
+            service.AddScoped<ICustomerRepository, CustomerRepository>();
+            service.AddScoped<IUserRepository, UserRepository>();
             service.AddDbContext<ModelContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             return service;

@@ -8,12 +8,12 @@ namespace CustomerManagement.Contracts.Contracts
 {
     public class CustomerDetails
     {
-        public int CustomerNumber { get; set; }
+        public DateOnly? dob { get; set; }
 
-        public string? CustomerName { get; set; }
+        public int id { get; set; }
 
         public string? Gender { get; set; }
 
-        public DateOnly? DateOfBirth { get; set; }
+        public string? CustomerName { get; set; }
     }
 }
