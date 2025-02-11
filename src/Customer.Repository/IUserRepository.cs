@@ -11,5 +11,7 @@ namespace CustomerManagement.Repository
  public   interface IUserRepository
     {
          Task<UserDetails> GetuserDetails(LoginDetails loginDetails);
+        Task<UserDetails> Getuser(int id);
+
     }
 }

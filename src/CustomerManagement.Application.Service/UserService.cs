@@ -23,5 +23,10 @@ namespace CustomerManagement.Application.Service
         {
           return await _userRepository.GetuserDetails(loginDetails);
         }
+
+        public async Task<UserDetails> GetuserDetails(int id)
+        {
+            return await _userRepository.Getuser(id);
+        }
     }
 }

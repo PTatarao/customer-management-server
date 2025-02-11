@@ -11,5 +11,6 @@ namespace CustomerManagement.Application.Service
     public interface IUserService
     {
         Task<UserDetails> Getuser(LoginDetails loginDetails);
+        Task<UserDetails> GetuserDetails(int id);
     }
 }

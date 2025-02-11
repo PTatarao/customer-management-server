@@ -21,19 +21,18 @@ namespace CustomerManagement.Repository
             _logger = logger;
             _modelContext = modelContext;
         }
-        public async Task<UserDetails> GetuserDetails(LoginDetails loginDetails)
+
+        public async Task<UserDetails> Getuser(int id)
         {
             var userdetails = new UserDetails();
             try
             {
-                bool userexists = _modelContext.Users.Any(e => e.Name.Equals(loginDetails.UserName) && e.Password.Equals(loginDetails.Password));
-                if (userexists)
+                var userexists =await _modelContext.Users.FindAsync(id);
+                if (userexists != null)
                 {
                     userdetails = (from user in _modelContext.Users
                                    join userRole in _modelContext.UserRoles on user.Id equals userRole.UserId
                                    join role in _modelContext.Roles on userRole.RoleId equals role.RoleId
-
-                                   where user.Name.Equals(loginDetails.UserName) && user.Password.Equals(loginDetails.Password)
                                    select new UserDetails
                                    {
                                        Id = user.Id,
@@ -49,6 +48,29 @@ namespace CustomerManagement.Repository
             }
 
             return userdetails;
+        }
+
+        public async Task<UserDetails> GetuserDetails(LoginDetails loginDetails)
+        {
+            try
+            {
+                var user = _modelContext.Users.Where(e => e.Name.ToUpper().Equals(loginDetails.UserName) && e.Password.Equals(loginDetails.Password)).FirstOrDefault();
+                if (user == null)
+                {
+                    throw new Exception("User not found");
+                }
+                var userdetails = new UserDetails
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                };
+                return userdetails;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
         }
     }
 }

@@ -1,4 +1,5 @@
 using Customer.Repository;
+using customermanagement.Handlers;
 using CustomerManagement.Application.Service;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +12,6 @@ builder.Services.AddSwaggerGen();
 builder.Services.configureservice(builder.Configuration);
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IUserService, UserService>();
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
@@ -29,8 +29,9 @@ if (app.Environment.IsDevelopment())
 }
 app.UseCors("AllowSpecificOrigin");
 app.UseHttpsRedirection();
-
+app.UseMiddleware<TokenhandlerMiddleware>();
 app.UseAuthorization();
+app.UseAuthentication();
 
 app.MapControllers();
 
